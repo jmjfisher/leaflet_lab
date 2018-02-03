@@ -1,0 +1,18 @@
+/* Stylesheet by Buck E. Badger, 2015 */
+
+#mapid {
+    height: 97vh;
+    width: 80%;
+    display: inline-block;
+}
+
+#panel {
+    width: 16%;
+    padding: 20px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.leaflet-popup-content p {
+    margin: 0.2em 0;
+}
