@@ -16,6 +16,21 @@ function createMap(){
     getData(map);
 };
 
+//Create new sequence controls
+function createSequenceControls(map){
+    //create range input element (slider)
+    $('#panel').append('<input class="range-slider" type="range">');
+    $('#panel').append('<button class="skip" id="reverse">Reverse</button>');
+    $('#panel').append('<button class="skip" id="forward">Skip</button>');
+    
+    $('.range-slider').attr({
+        max: 9,
+        min: 0,
+        value: 0,
+        step: 1
+    })
+};
+
 //calculate radius of each symbol based on total max/min values, max radius of 75 for entire dataset
 function calcPropRadiusJM(attValue) {
     var radius = ((attValue-4.5)/319.8)*75;
@@ -25,7 +40,7 @@ function calcPropRadiusJM(attValue) {
 //function to convert markers to circle markers
 function pointToLayer(feature, latlng){
     //Determine which attribute to visualize with proportional symbols
-    var attribute = "17/18";
+    var attribute = "Season_17/18";
 
     //create marker options
     var options = {
@@ -63,7 +78,8 @@ function pointToLayer(feature, latlng){
         this.closePopup();
     },
     click: function(){
-        $('#panel').html(panelContent);
+        $('#panel').append(panelContent);
+        //$('#panel').html(panelContent);
     }
     });
 
@@ -86,8 +102,8 @@ function getData(map){
         dataType: "json",
         success: function(response){
 
-            //calls function to create proportional symbols
             createPropSymbols(response, map);
+            createSequenceControls(map);
         }
     });
 };
