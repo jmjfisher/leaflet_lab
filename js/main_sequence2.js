@@ -8,7 +8,7 @@ function createMap(){
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
         maxZoom: 18,
-        id: 'mapbox.streets',
+        id: 'mapbox.light',
         accessToken: 'pk.eyJ1Ijoiam1qZmlzaGVyIiwiYSI6ImNqYXVlNDg3cDVhNmoyd21oZ296ZXpwdWMifQ.OGprR1AOquImP-bemM-f2g'
     }).addTo(map);
 
@@ -38,53 +38,77 @@ function processData(data){
     return attributes;
 };
 
-//Create new sequence controls
-function createSequenceControls(map, attributes){
-    //create range input element (slider)
-    $('#panel').append('<input class="range-slider" type="range">');
-    $('#panel').append('<button class="skip" id="reverse">Back</button>');
-    $('#panel').append('<button class="skip" id="forward">Next</button>');
-    
-    $('.range-slider').attr({
-        max: 9,
-        min: 0,
-        value: 0,
-        step: 1
-    })
-    
-    $('.skip').click(function() {
-        //get the old index value
-        var index = $('.range-slider').val();
+//Create new sequence controls IN MAP
+function createSequenceControls(map, attributes){   
+    var SequenceControl = L.Control.extend({
+        options: {
+            position: 'bottomleft'
+        },
 
-        //Step 6: increment or decrement depending on button clicked
-        if ($(this).attr('id') == 'forward'){
-        index++;
-        //Step 7: if past the last attribute, wrap around to first attribute
-        index = index > 9 ? 0 : index;
-        console.log(index);
-        } else if ($(this).attr('id') == 'reverse'){
-        index--;
-        //Step 7: if past the first attribute, wrap around to last attribute
-        index = index < 0 ? 9 : index;
-        console.log(index);
-        };
+        onAdd: function (map) {
+            // create the control container div with a particular class name
+            var container = L.DomUtil.create('div', 'sequence-control-container');
 
-        //Step 8: update slider
-        $('.range-slider').val(index);
-        updatePropSymbols(map, attributes[index]);
+            // ... initialize other DOM elements, add listeners, etc.
+            $(container).append('<button class="skip" id="reverse" title="Reverse">Back</button>');       
+            $(container).append('<input class="range-slider" type="range">');
+            $(container).append('<button class="skip" id="forward" title="Forward">Next</button>');
+            
+            $(container).on('mousedown dblclick', function(e){
+                L.DomEvent.stopPropagation(e);
+            });
+            
+            return container;
+        }
     });
-    
-    $('.range-slider').on('input', function() {
-        var index = $(this).val();
-        console.log(index);
-        updatePropSymbols(map, attributes[index]);
-    });
+
+    map.addControl(new SequenceControl());
+    addSequencing(map,attributes);
 };
 
 //calculate radius of each symbol based on total max/min values, max radius of 75 for entire dataset
 function calcPropRadiusJM(attValue) {
     var radius = 5+((attValue-4.5)/319.8)*75;
     return radius;
+};
+
+//adds event listeners to slider and buttons after created in createSequenceControls
+function addSequencing(map,attributes){
+    
+    $('.range-slider').attr({   
+        max: 9,
+        min: 0,
+        value: 0,
+        step: 1
+    });
+
+    $('.skip').click(function() {
+        //get the old index value
+        var index = $('.range-slider').val();
+
+        //increment or decrement depending on button clicked
+        if ($(this).attr('id') == 'forward'){
+        index++;
+        //if past the last attribute, wrap around to first attribute
+        index = index > 9 ? 0 : index;
+        console.log(index);
+        } else if ($(this).attr('id') == 'reverse'){
+        index--;
+        //if past the first attribute, wrap around to last attribute
+        index = index < 0 ? 9 : index;
+        console.log(index);
+        };
+
+        //update slider
+        $('.range-slider').val(index);
+        updatePropSymbols(map, attributes[index]);
+    });
+
+    $('.range-slider').on('input', function() {
+        var index = $(this).val();
+        console.log(index);
+        updatePropSymbols(map, attributes[index]);
+    });
 };
 
 //function to convert markers to circle markers
@@ -138,6 +162,7 @@ function getData(map){
             
             createPropSymbols(response, map, attributes);
             createSequenceControls(map, attributes);
+            createLegend(map, attributes);
         }
     });
 };
@@ -158,52 +183,6 @@ function updatePropSymbols(map, attribute){
         
         };
     });
-};
-//Create new sequence controls
-function createSequenceControls(map, attributes){   
-    var SequenceControl = L.Control.extend({
-        options: {
-            position: 'bottomleft'
-        },
-
-        onAdd: function (map) {
-            // create the control container div with a particular class name
-            var container = L.DomUtil.create('div', 'sequence-control-container');
-
-            $(container).append('<button class="skip" id="reverse" title="Reverse">Reverse</button>');
-            $(container).append('<input class="range-slider" type="range">');
-            $(container).append('<button class="skip" id="forward" title="Forward">Skip</button>');
-            
-            $(container).on('mousedown dblclick', function(e){
-                L.DomEvent.stopPropagation(e);
-            });
-
-            return container;
-        }
-    });
-
-    map.addControl(new SequenceControl());
-//all functions defined, load the map!
-};
-
-function createLegend(map, attributes){
-    var LegendControl = L.Control.extend({
-        options: {
-            position: 'topright'
-        },
-
-        onAdd: function (map) {
-            // create the control container with a particular class name
-            var container = L.DomUtil.create('div', 'legend-control-container');
-
-            var year = attribute.split("_")[1];
-            $(container).html('<h1>');
-
-            return container;
-        }
-    });
-
-    map.addControl(new LegendControl());
 };
 
 function createPopup(properties, attribute, layer, radius){
@@ -234,9 +213,30 @@ function createPopup(properties, attribute, layer, radius){
         this.closePopup();
     },
     click: function(){
-        $('#panel').html(panelContent);
+        $('#team-area').html(panelContent);
     }
     });
+};
+
+function createLegend(map, attributes){
+    var LegendControl = L.Control.extend({
+        options: {
+            position: 'topright'
+        },
+
+        onAdd: function (map) {
+            // create the control container with a particular class name
+            var container = L.DomUtil.create('div', 'legend-control-container');
+
+            var year = attribute.split("_")[1];
+            
+            $(container).html('<h1>Season '+year+'</h1');
+
+            return container;
+        }
+    });
+
+    map.addControl(new LegendControl());
 };
 
 $(document).ready(createMap);
