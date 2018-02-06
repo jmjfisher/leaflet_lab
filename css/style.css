@@ -48,6 +48,17 @@ h2 {
     border: solid gray 1px;
 }
 
+.legend-control-container {
+    width: 200px;
+    height: 240px;
+    background-color: rgba(255,255,255,0.8);
+    padding: 10px;
+    line-height: 45px;
+    text-align: center;
+    border: solid gray 1px;
+    font-size: 16px;
+}
+
 .range-slider {
     width: 200px;
 }
