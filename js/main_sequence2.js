@@ -1,8 +1,8 @@
 //function to instantiate the Leaflet map
 function createMap(){
     
-    //create the map
-    var map = L.map('mapid').setView([47, 1.673078133], 5);
+    //create the map 1.673078133
+    var map = L.map('mapid').setView([47.75, -1.7], 5);
 
     //add base tilelayer
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
@@ -78,7 +78,7 @@ function addSequencing(map,attributes){
     $('.range-slider').attr({   
         max: 9,
         min: 0,
-        value: 0,
+        value: 9,
         step: 1
     });
 
@@ -91,24 +91,23 @@ function addSequencing(map,attributes){
         index++;
         //if past the last attribute, wrap around to first attribute
         index = index > 9 ? 0 : index;
-        console.log(index);
+
         } else if ($(this).attr('id') == 'reverse'){
         index--;
         //if past the first attribute, wrap around to last attribute
         index = index < 0 ? 9 : index;
-        console.log(index);
+
         };
 
         //update slider
         $('.range-slider').val(index);
         updatePropSymbols(map, attributes[index]);
-        liveUpdatePanel(attributes[index]);
+        liveUpdatePanel(map,attributes[index]);
         updateLegend(map,attributes[index]);
     });
 
     $('.range-slider').on('input', function() {
         var index = $(this).val();
-        console.log(index);
         updatePropSymbols(map, attributes[index]);
         liveUpdatePanel(map,attributes[index]);
         updateLegend(map,attributes[index]);
@@ -117,19 +116,71 @@ function addSequencing(map,attributes){
 };
 
 function liveUpdatePanel(map,spot){
-    console.log(spot);
-    $('#team-area').html("");
+
+    //var update = map.layer.feature.properties[spot];
+    //$('#fees').html(update);
+};
+
+function fillColoring(e){
+    if (e === 1){
+        var color = "#DA020E"
+        return color;
+    } else if (e === 2) {
+        var color = "#004D98"
+        return color;
+    } else if (e === 3) {
+        var color = "#FEBE10"
+        return color;
+    } else if (e === 4) {
+        var color = "#EE0A46"
+        return color;
+    } else if (e === 5) {
+        var color = "#5CBFEB"
+        return color;
+    } else if (e === 6) {
+        var color = "#9C824A"
+        return color;
+    } else if (e === 7) {
+        var color = "#034694"
+        return color;
+    } else if (e === 8) {
+        var color = "#D00027"
+        return color;
+    } else if (e === 9) {
+        var color = "000000"
+        return color;
+    } else if (e === 10) {
+        var color = "#001C58"
+        return color;
+    } else if (e === 11) {
+        var color = "#003366"
+        return color;
+    } else if (e === 12) {
+        var color = "#F7B500"
+        return color;
+    } else if (e === 13) {
+        var color = "#E11624"
+        return color;
+    } else if (e === 14) {
+        var color = "#CB3524"
+        return color;
+    } else {
+        var color = "#60223B"
+        return color;
+    }
 };
 
 //function to convert markers to circle markers
 function pointToLayer(feature, latlng, attributes){
     
     //Determine which attribute to visualize with proportional symbols
-    var attribute = attributes[0];
-
+    var attribute = attributes[9];
+    //derive rank value to submit to fillColoring function
+    var rank = "Rank";
+    var ranking = Number(feature.properties[rank]);
     //create marker options
     var options = {
-        fillColor: "#5BA75B",
+        fillColor: fillColoring(ranking),
         color: "#000",
         weight: 1,
         opacity: 1,
@@ -207,7 +258,7 @@ function createPopup(properties, attribute, layer, radius){
     var locationText = "<p><b>Location</b>: " + properties.City + ", " + properties.Country + "</p>";
     var rankText = "<p><b>2017 Forbes Value Rank</b>: " + properties.Rank + "</p>";
     var season = attribute.split("_")[1];
-    var seasonSpend = "<p><b>" + season + " Transfer Fees</b>: &euro;" + properties[attribute] + "MM</p>";
+    var seasonSpend = "<p id=\"fees\"><b>" + season + " Transfer Fees</b>: &euro;" + properties[attribute] + "MM</p>";
     
     var panelContent = crest + teamText + locationText + rankText + seasonSpend;
 
@@ -246,7 +297,6 @@ function createLegend(map, attributes){
             var svg = '<svg id="attribute-legend" width="350px" height="185px">';
             
             //array of circle names to base loop on
-            //var circles = ["max", "mean", "min"];
             var circles = {
                 max: 80,
                 mean: 120,
@@ -273,7 +323,7 @@ function createLegend(map, attributes){
 
     map.addControl(new LegendControl());
 
-    updateLegend(map, attributes[0]);
+    updateLegend(map, attributes[9]);
 };
 
 //Update the legend with new attribute
