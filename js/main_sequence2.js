@@ -232,7 +232,7 @@ function createPopup(properties, attribute, layer, radius){
 function createLegend(map, attributes){
     var LegendControl = L.Control.extend({
         options: {
-            position: 'bottomright'
+            position: 'bottomleft'
         },
 
         onAdd: function (map) {
@@ -243,16 +243,23 @@ function createLegend(map, attributes){
             $(container).append('<div id="temporal-legend">')
 
             //Step 1: start attribute legend svg string
-            var svg = '<svg id="attribute-legend" width="180px" height="180px">';
+            var svg = '<svg id="attribute-legend" width="350px" height="185px">';
             
             //array of circle names to base loop on
-            var circles = ["max", "mean", "min"];
+            //var circles = ["max", "mean", "min"];
+            var circles = {
+                max: 80,
+                mean: 120,
+                min: 160
+            }
             
             //Step 2: loop to add each circle and text to svg string
-            for (var i=0; i<circles.length; i++){
+            for (var circle in circles){
                 //circle string
-                svg += '<circle class="legend-circle" id="' + circles[i] + 
-                '" fill="#5BA75B" fill-opacity="0.8" stroke="#000000" cx="90"/>';
+                svg += '<circle class="legend-circle" id="' + circle + 
+                '" fill="#5BA75B" fill-opacity="0.8" stroke="#000000" cx="92"/>';
+                
+                svg += '<text id="' + circle + '-text" x="200" y="' + circles[circle] + '"></text>';
             };
             
             svg += "</svg>";
@@ -273,10 +280,10 @@ function createLegend(map, attributes){
 function updateLegend(map, attribute){
     //create content for legend
     var year = attribute.split("_")[1];
-    var content = "Season " + year;
+    var content = year + " Season";
 
     //replace legend content
-    $('#temporal-legend').html(content);
+    $('#temporal-legend').html("<b>"+content+"</b>");
     
     var circleValues = getCircleValues(map, attribute);
 
@@ -286,9 +293,11 @@ function updateLegend(map, attribute){
 
         //Step 3: assign the cy and r attributes
         $('#'+key).attr({
-            cy: 179 - radius,
+            cy: 182 - radius,
             r: radius
         });
+        
+        $('#'+key+'-text').html("&euro;" + Math.round(circleValues[key]*100)/100 + " million");
     };
 };
 
