@@ -6,7 +6,7 @@ function createMap(){
 
     //add base tilelayer
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a> Transfer Data: <a href="https://www.transfermarkt.com/">Transfermarkt</a> Forbes Ranking: <a href="https://www.forbes.com/forbes/welcome/?toURL=https://www.forbes.com/sites/mikeozanian/2017/06/06/the-worlds-most-valuable-soccer-teams-2017/">Forbes</a>',
         maxZoom: 18,
         id: 'mapbox.light',
         accessToken: 'pk.eyJ1Ijoiam1qZmlzaGVyIiwiYSI6ImNqYXVlNDg3cDVhNmoyd21oZ296ZXpwdWMifQ.OGprR1AOquImP-bemM-f2g'
@@ -31,15 +31,11 @@ function processData(data){
             attributes.push(attribute);
         };
     };
-
-    //check result
-    console.log(attributes);
-
     return attributes;
 };
 
 //Create new sequence controls IN MAP
-function createSequenceControls(map, attributes){   
+function createSequenceControls(map, attributes, geodata){   
     var SequenceControl = L.Control.extend({
         options: {
             position: 'bottomleft'
@@ -64,7 +60,7 @@ function createSequenceControls(map, attributes){
     });
 
     map.addControl(new SequenceControl());
-    addSequencing(map,attributes);
+    addSequencing(map,attributes,geodata);
 };
 
 //calculate radius of each symbol based on total max/min values, max radius of 75 for entire dataset
@@ -74,7 +70,8 @@ function calcPropRadiusJM(attValue) {
 };
 
 //adds event listeners to slider and buttons after created in createSequenceControls
-function addSequencing(map,attributes){
+function addSequencing(map,attributes,geodata){
+
     $('.range-slider').attr({   
         max: 9,
         min: 0,
@@ -102,23 +99,29 @@ function addSequencing(map,attributes){
         //update slider
         $('.range-slider').val(index);
         updatePropSymbols(map, attributes[index]);
-        liveUpdatePanel(map,attributes[index]);
+        liveUpdatePanel(attributes[index],geodata);
         updateLegend(map,attributes[index]);
     });
 
     $('.range-slider').on('input', function() {
         var index = $(this).val();
         updatePropSymbols(map, attributes[index]);
-        liveUpdatePanel(map,attributes[index]);
+        liveUpdatePanel(attributes[index],geodata);
         updateLegend(map,attributes[index]);
 
     });
 };
 
-function liveUpdatePanel(map,spot){
-
-    //var update = map.layer.feature.properties[spot];
-    //$('#fees').html(update);
+function liveUpdatePanel(spot,geodata){
+    
+    var teamRankFull = String($('#rank').text());
+    var teamRank = Number(teamRankFull.split(": ")[1]);
+    var teamSelect = teamRank-1;
+    var newValue = geodata["features"][teamSelect]["properties"][spot];
+    var season = spot.split("_")[1];
+    var newText = "<b>" + season + " Transfer Fees</b>: &euro;" + newValue + "  MM"
+    $('#fees').html(newText);
+    
 };
 
 function fillColoring(e){
@@ -220,11 +223,12 @@ function getData(map){
         success: function(response){
 
             var attributes = processData(response);
-            console.log("here are the attributes: " + attributes);
+            var geodata = response;
             
             createPropSymbols(response, map, attributes);
-            createSequenceControls(map, attributes);
+            createSequenceControls(map, attributes, geodata);
             createLegend(map, attributes);
+            createSearch(map,geodata);
         }
     });
 };
@@ -254,17 +258,17 @@ function createPopup(properties, attribute, layer, radius){
 
     //add formatted attribute to panel content string
     var crest = "<img class=\"crest\" src=img/" + String(properties.Rank) + ".svg />";
-    var teamText = "<h2>" + properties.Team + "</h2>"
+    var teamText = "<h2 id=\"team-name\">" + properties.Team + "</h2>"
     var locationText = "<p><b>Location</b>: " + properties.City + ", " + properties.Country + "</p>";
-    var rankText = "<p><b>2017 Forbes Value Rank</b>: " + properties.Rank + "</p>";
+    var rankText = "<p id=\"rank\"><b>2017 Forbes Value Rank</b>: " + properties.Rank + "</p>";
     var season = attribute.split("_")[1];
-    var seasonSpend = "<p id=\"fees\"><b>" + season + " Transfer Fees</b>: &euro;" + properties[attribute] + "MM</p>";
+    var seasonSpend = "<p id=\"fees\"><b>" + season + " Transfer Fees</b>: &euro;" + properties[attribute] + "  MM</p>";
     
     var panelContent = crest + teamText + locationText + rankText + seasonSpend;
 
     //replace the layer popup
     layer.bindPopup(popupContent, {
-        offset: new L.Point(0,-radius)
+        offset: new L.Point(0,-(radius/2))
     });
     
     layer.on({
@@ -383,6 +387,65 @@ function getCircleValues(map, attribute){
         mean: mean,
         min: min
     };
+};
+
+function createSearch(map, geodata){
+    var features = geodata["features"];
+    var teamList = [];
+    for (var i = 0; i < features.length; i++) {
+        var team = String(features[i]["properties"]["Team"]);
+        teamList.push(team);
+    };
+    var teamListABC = teamList.sort();
+    
+    var SearchControl = L.Control.extend({
+        options: {
+            position: 'topright'
+        },
+
+        onAdd: function (map) {
+            // create the control container with a particular class name
+            var container = L.DomUtil.create('div', 'search-control-container');            
+            return container;
+        }
+    });
+
+    map.addControl(new SearchControl());
+    populateSearchDrop(map,geodata,teamListABC);
+
+};
+
+function populateSearchDrop(map,geodata,list) {
+    
+    $(".search-control-container").append('<select id="select-drop-down"><option value="zoom">Zoom to...</option>');
+    $("#select-drop-down").append('<option value="full">FULL MAP</option>');
+    
+    for (var i = 0; i < list.length; i++) {
+        var team = list[i];
+        var value = team.replace(/\s+/g, '');
+        $("#select-drop-down").append('<option value='+value+'>'+team+'</option>');
+    };
+    
+    $(".search-control-container").append('</select>');
+    $("#select-drop-down").change(function() {
+        reZoom(map,this,geodata);
+    });
+};
+
+function reZoom(map,e,data) {
+    var team = e.options[e.selectedIndex].text;
+    var features = data["features"];
+    function teamCheck(element, index, array) {
+        return element["properties"]["Team"] == team;
+    };
+    var index = Number(features.findIndex(teamCheck));
+    if (team === "FULL MAP") {
+        map.setView([47.75, -1.7], 5);
+    } else if ( index >= 0 && index < features.length) {
+        var latitude = features[index]["geometry"]["coordinates"][1];
+        var longitude = features[index]["geometry"]["coordinates"][0];
+        map.setView([latitude, longitude], 11);
+    }
 };
 
 $(document).ready(createMap);
