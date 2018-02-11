@@ -2,16 +2,20 @@
 function createMap(){
     
     //create the map 1.673078133
-    var map = L.map('mapid').setView([47.75, -1.7], 5);
+    var map = L.map('mapid').setView([47.6, -1.7], 5);
 
     //add base tilelayer
+    /*
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a> Transfer Data: <a href="https://www.transfermarkt.com/">Transfermarkt</a> Forbes Ranking: <a href="https://www.forbes.com/forbes/welcome/?toURL=https://www.forbes.com/sites/mikeozanian/2017/06/06/the-worlds-most-valuable-soccer-teams-2017/">Forbes</a>',
         maxZoom: 18,
         id: 'mapbox.light',
         accessToken: 'pk.eyJ1Ijoiam1qZmlzaGVyIiwiYSI6ImNqYXVlNDg3cDVhNmoyd21oZ296ZXpwdWMifQ.OGprR1AOquImP-bemM-f2g'
     }).addTo(map);
-
+    */
+    
+    L.tileLayer.provider('Stamen.Toner', {attribution:'Map tiles by <a href="https://stamen.com/">Stamen Design</a>, <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a> - Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> - Transfer Data <a href="https://www.transfermarkt.com/">Transfermarkt</a> - <a href="https://www.forbes.com/forbes/welcome/?toURL=https://www.forbes.com/sites/mikeozanian/2017/06/06/the-worlds-most-valuable-soccer-teams-2017/">Forbes Ranking</a>'}).addTo(map);
+    
     //call getData function
     getData(map);
 };
@@ -47,9 +51,9 @@ function createSequenceControls(map, attributes, geodata){
 
             // ... initialize other DOM elements, add listeners, etc.
             
-            $(container).append('<button class="skip" id="reverse" title="Reverse">Back</button>');       
+            $(container).append('<img class="skip" id="reverse" src="img/left.svg">');       
             $(container).append('<input class="range-slider" type="range">');
-            $(container).append('<button class="skip" id="forward" title="Forward">Next</button>');
+            $(container).append('<img class="skip" id="forward" src="img/right.svg">');
             
             $(container).on('mousedown dblclick', function(e){
                 L.DomEvent.stopPropagation(e);
@@ -93,22 +97,20 @@ function addSequencing(map,attributes,geodata){
         index--;
         //if past the first attribute, wrap around to last attribute
         index = index < 0 ? 9 : index;
-
         };
 
         //update slider
         $('.range-slider').val(index);
         updatePropSymbols(map, attributes[index]);
-        liveUpdatePanel(attributes[index],geodata);
         updateLegend(map,attributes[index]);
+        liveUpdatePanel(attributes[index],geodata);
     });
 
     $('.range-slider').on('input', function() {
         var index = $(this).val();
         updatePropSymbols(map, attributes[index]);
-        liveUpdatePanel(attributes[index],geodata);
         updateLegend(map,attributes[index]);
-
+        liveUpdatePanel(attributes[index],geodata);
     });
 };
 
@@ -311,7 +313,7 @@ function createLegend(map, attributes){
             for (var circle in circles){
                 //circle string
                 svg += '<circle class="legend-circle" id="' + circle + 
-                '" fill="#5BA75B" fill-opacity="0.8" stroke="#000000" cx="92"/>';
+                '" fill="white" fill-opacity="1" stroke="#000000" stroke-width="2" cx="92"/>';
                 
                 svg += '<text id="' + circle + '-text" x="200" y="' + circles[circle] + '"></text>';
             };
@@ -337,7 +339,7 @@ function updateLegend(map, attribute){
     var content = year + " Season";
 
     //replace legend content
-    $('#temporal-legend').html("<b>"+content+"</b>");
+    $('#temporal-legend').html("<b id='legend-season'>"+content+"</b>");
     
     var circleValues = getCircleValues(map, attribute);
 
@@ -353,6 +355,10 @@ function updateLegend(map, attribute){
         
         $('#'+key+'-text').html("&euro;" + Math.round(circleValues[key]*100)/100 + " million");
     };
+    
+    var newHeight = Number(circleValues["max"])-99;
+    console.log(newHeight);
+    //$(".legend-control-container").css({"height":newHeight})
 };
 
 //Calculate the max, mean, and min values for a given attribute
@@ -400,7 +406,7 @@ function createSearch(map, geodata){
     
     var SearchControl = L.Control.extend({
         options: {
-            position: 'topright'
+            position: 'bottomleft'
         },
 
         onAdd: function (map) {
@@ -444,7 +450,7 @@ function reZoom(map,e,data) {
     } else if ( index >= 0 && index < features.length) {
         var latitude = features[index]["geometry"]["coordinates"][1];
         var longitude = features[index]["geometry"]["coordinates"][0];
-        map.setView([latitude, longitude], 11);
+        map.setView([(latitude - .007), (longitude - .025)], 12);
     }
 };
 

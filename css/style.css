@@ -1,12 +1,31 @@
 /* Stylesheet by Buck E. Badger, 2015 */
 
 p {
-    font-family: Baskerville, "Baskerville Old Face", "Goudy Old Style", Garamond, "Times New Roman", serif;
-    font-size: 12pt;
+    font-family:  Arial, sans-serif;
+    font-size: 11pt;
 }
 
 h2 {
-    font-family: Baskerville, "Baskerville Old Face", "Goudy Old Style", Garamond, "Times New Roman", serif;
+    font-family: Arial, sans-serif;
+}
+
+#select-drop-down {
+    width: 268px;
+    padding: 5px;
+    font-size: 16px;
+    line-height: 1;
+    border: 0;
+    border-radius: 5px;
+    height: 34px;
+    background: url(http://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/br_down.png) no-repeat right white;
+    -webkit-appearance: none;
+    background-position-x: 244px;
+    -moz-appearance:none;
+    box-shadow: 4px 4px;
+}
+
+#legend-season {
+    font-size: 16pt;
 }
 
 .hover-team {
@@ -20,14 +39,14 @@ h2 {
 }
 
 #panel {
-    width: 18%;
+    width: 19%;
     height: 97vh;
-    padding: px;
     display: inline-block;
     vertical-align: top;
     text-align: center;
-    align-content: center;
     background-color: white;
+    border-left: 2px dashed black;
+    border-right:2px dashed black;
 }
 
 .leaflet-popup-content p {
@@ -37,32 +56,48 @@ h2 {
 .crest {
     max-width: 90%;
     max-height: 300px;
-    padding-left: 25px;
-    -webkit-filter: drop-shadow( 5px 5px 5px #4d4d4d );
-    filter: drop-shadow( 5px 5px 5px #4d4d4d );
+    float: center;
 }
 
 .sequence-control-container {
-    width: 350px;
+    width: 295px;
     height: 30px;
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255,255,255);
     padding: 10px;
     line-height: 45px;
     text-align: center;
-    border: solid gray 1px;
+    box-shadow: 4px 4px;
+    border: 0;
+    
 }
 
 .legend-control-container {
-    width: 310px;
+    width: 295px;
     height: 225px;
-    background-color: rgba(255,255,255,0.5);
+    background-color: rgba(255,255,255,0.9);
     padding: 10px;
+    border: 0;
     line-height: 45px;
     text-align: center;
-    border: solid gray 1px;
-    font-size: 16px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    box-shadow: 4px 4px;
 }
 
 .range-slider {
     width: 200px;
+}
+
+.skip {
+    width: 35px;
+    height: 35px;
+    margin-top: 1px;
+}
+
+#forward {
+    float:right;
+}
+
+#reverse {
+    float:left;
 }
