@@ -181,13 +181,12 @@ function pointToLayer(feature, latlng, attributes){
     //Determine which attribute to visualize with proportional symbols
     var attribute = attributes[9];
     //derive rank value to submit to fillColoring function
-    var rank = "Rank";
-    var ranking = Number(feature.properties[rank]);
+    var ranking = Number(feature.properties["Rank"]);
     //create marker options
     var options = {
         fillColor: fillColoring(ranking),
         color: "#000",
-        weight: 1,
+        weight: 2,
         opacity: 1,
         fillOpacity: 0.8
     };
