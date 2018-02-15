@@ -55,9 +55,9 @@ function createSequenceControls(map, attributes, geodata){
             $(container).append('<input class="range-slider" type="range"/>');
             $(container).append('<img class="skip" id="forward" src="img/right.svg"/>');
             
-            $(container).on('dblclick mousedown', function(e){
-                L.DomEvent.stopPropagation(e);
-            });
+            $(container).on('mousedown dblclick pointerdown', function(ev){
+                L.DomEvent.stopPropagation(ev);
+            });            
             
             return container;
         }
