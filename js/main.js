@@ -4,16 +4,7 @@ function createMap(){
     //create the map 1.673078133
     var map = L.map('mapid').setView([47.6, -1.7], 5);
 
-    //add base tilelayer
-    /*
-    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a> Transfer Data: <a href="https://www.transfermarkt.com/">Transfermarkt</a> Forbes Ranking: <a href="https://www.forbes.com/forbes/welcome/?toURL=https://www.forbes.com/sites/mikeozanian/2017/06/06/the-worlds-most-valuable-soccer-teams-2017/">Forbes</a>',
-        maxZoom: 18,
-        id: 'mapbox.light',
-        accessToken: 'pk.eyJ1Ijoiam1qZmlzaGVyIiwiYSI6ImNqYXVlNDg3cDVhNmoyd21oZ296ZXpwdWMifQ.OGprR1AOquImP-bemM-f2g'
-    }).addTo(map);
-    */
-    
+    //add base tilelayer    
     L.tileLayer.provider('Stamen.Toner', {attribution:'Map tiles by <a href="https://stamen.com/">Stamen Design</a>, <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a> - Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> - Transfer Data <a href="https://www.transfermarkt.com/">Transfermarkt</a> - <a href="https://www.forbes.com/forbes/welcome/?toURL=https://www.forbes.com/sites/mikeozanian/2017/06/06/the-worlds-most-valuable-soccer-teams-2017/">Forbes Ranking</a>'}).addTo(map);
     
     //call getData function
@@ -187,7 +178,7 @@ function pointToLayer(feature, latlng, attributes){
     var options = {
         fillColor: fillColoring(ranking),
         color: "#000",
-        weight: 1,
+        weight: 2,
         opacity: 1,
         fillOpacity: 0.8
     };

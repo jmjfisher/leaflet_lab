@@ -1,5 +1,3 @@
-/* Stylesheet by Buck E. Badger, 2015 */
-
 p {
     font-family:  Arial, sans-serif;
     font-size: 11pt;
@@ -98,4 +96,12 @@ h2 {
 
 #reverse {
     float:left;
+}
+
+a:visited {
+    color: black;
+}
+
+a:link {
+    color: black;
 }
