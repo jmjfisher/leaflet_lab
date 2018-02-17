@@ -5,7 +5,7 @@ function createMap(){
     var map = L.map('mapid').setView([47.6, -1.7], 5);
 
     //add base tilelayer    
-    L.tileLayer.provider('Stamen.Toner', {attribution:'Map tiles by <a href="https://stamen.com/">Stamen Design</a>, <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a> - Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> - Transfer Data <a href="https://www.transfermarkt.com/">Transfermarkt</a> - <a href="https://www.forbes.com/forbes/welcome/?toURL=https://www.forbes.com/sites/mikeozanian/2017/06/06/the-worlds-most-valuable-soccer-teams-2017/">Forbes Ranking</a>'}).addTo(map);
+    L.tileLayer.provider('Stamen.TonerLite', {attribution:'Map tiles by <a href="https://stamen.com/">Stamen Design</a>, <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a> - Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> - Transfer Data <a href="https://www.transfermarkt.com/">Transfermarkt</a> - <a href="https://www.forbes.com/forbes/welcome/?toURL=https://www.forbes.com/sites/mikeozanian/2017/06/06/the-worlds-most-valuable-soccer-teams-2017/">Forbes Ranking</a>'}).addTo(map);
     
     //call getData function
     getData(map);
@@ -356,7 +356,7 @@ function createLegend(map, attributes){
             for (var circle in circles){
                 //circle string
                 svg += '<circle class="legend-circle" id="' + circle + 
-                '" fill="white" fill-opacity="1" stroke="#000000" stroke-width="2" cx="92"/>';
+                '" fill="#D3D3D3" fill-opacity=".8" stroke="#000000" stroke-width="2" cx="92"/>';
                 
                 svg += '<text id="' + circle + '-text" x="200" y="' + circles[circle] + '"></text>';
             };
