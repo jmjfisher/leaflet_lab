@@ -201,11 +201,56 @@ function pointToLayer(feature, latlng, attributes){
 //Add circle markers for point features to the map
 function createPropSymbols(data, map, attributes){
     //create a Leaflet GeoJSON layer and add it to the map
-    L.geoJson(data, {
+    var transfers = L.geoJson(data, {
         pointToLayer: function(feature, latlng){
             return pointToLayer(feature, latlng, attributes);
         }
     }).addTo(map);
+    
+    var markers = L.markerClusterGroup();
+    var ranks = L.geoJson(data, {
+        pointToLayer: function(feature, latlng){
+            return rankMarkers(feature,latlng);
+        }
+    });
+    markers.addLayer(ranks);
+    var overlayMaps = {
+        "Transfer Fees": transfers,
+        "2017 Forbes Ranks": markers
+    };
+    L.control.layers(overlayMaps).addTo(map);
+
+};
+
+function rankMarkers(feature,latlng) {
+    var popupContent = "<p class=\"hover-team\"><b>" + feature["properties"]["Team"] + "</b></p>";
+    var panelContent = "<h3>2017 Forbes Ranking</h3><br><p>1. Manchester United<br>2. Barcelona<br>3. Real Madrid<br>4. Bayern Munich<br>5. Manchester City<br>6. Arsenal<br>7. Chelsea<br>8. Liverpool<br>9. Juventus<br>10. Tottenham<br>11. Paris Saint-Germain<br>12. Borussia Dortmund<br>13. A.C. Milan<br>14. Atletico Madrid<br>15. West Ham United</p>";
+    var rank = Number(feature.properties["Rank"]);
+    var iconURL = String('img/ball_'+rank+'.png');
+    var myIcon = L.icon({
+        iconUrl: iconURL,
+        iconSize: [40, 40]
+    });
+    var layer = L.marker(latlng, {icon: myIcon});
+    layer.bindPopup(popupContent, {
+        offset: new L.Point(0,-10)
+    });
+    
+    
+    layer.on({
+    mouseover: function(){
+        this.openPopup();
+    },
+    mouseout: function(){
+        this.closePopup();
+    },
+    click: function(){
+        $('#team-area').html(panelContent);
+    }
+    });
+    
+    return layer;
+
 };
     
 //function to retrieve the data and place it on the map
