@@ -1,7 +1,7 @@
 //function to instantiate the Leaflet map
 function createMap(){
     
-    //create the map 1.673078133
+    //create the map
     var map = L.map('mapid').setView([47.6, -1.7], 5);
 
     //add base tilelayer    
@@ -11,7 +11,7 @@ function createMap(){
     getData(map);
 };
 
-//Above Example 3.8...Step 3: build an attributes array from the data
+//build an attributes array from the data
 function processData(data){
     //empty array to hold attributes
     var attributes = [];
@@ -29,7 +29,7 @@ function processData(data){
     return attributes;
 };
 
-//Create new sequence controls IN MAP
+//create new sequence controls IN MAP
 function createSequenceControls(map, attributes, geodata){   
     var SequenceControl = L.Control.extend({
         options: {
@@ -41,7 +41,6 @@ function createSequenceControls(map, attributes, geodata){
             var container = L.DomUtil.create('div', 'sequence-control-container');
 
             // ... initialize other DOM elements, add listeners, etc.
-            
             $(container).append('<img class="skip" id="reverse" src="img/left.svg"/>');       
             $(container).append('<input class="range-slider" type="range"/>');
             $(container).append('<img class="skip" id="forward" src="img/right.svg"/>');
@@ -58,7 +57,7 @@ function createSequenceControls(map, attributes, geodata){
     addSequencing(map,attributes,geodata);
 };
 
-//calculate radius of each symbol based on total max/min values, max radius of 75 for entire dataset
+//calculate radius of each symbol based on total max/min values. derived from tinkering at what looks best at default zoom
 function calcPropRadiusJM(attValue) {
     var radius = 5+((attValue-4.5)/319.8)*85;
     return radius;
@@ -105,6 +104,7 @@ function addSequencing(map,attributes,geodata){
     });
 };
 
+//updates the panel content when changing the season to reflect change in spending on season html tags
 function liveUpdatePanel(spot,geodata){
     
     var teamRankFull = String($('#rank').text());
@@ -114,9 +114,9 @@ function liveUpdatePanel(spot,geodata){
     var season = spot.split("_")[1];
     var newText = "<b>" + season + " Transfer Fees</b>: &euro;" + newValue + "  MM"
     $('#fees').html(newText);
-    
 };
 
+//defines the fill coloring of the prop symbols based on team rank, distinct per team
 function fillColoring(e){
     if (e === 1){
         var color = "#DA020E"
@@ -172,8 +172,7 @@ function pointToLayer(feature, latlng, attributes){
     //Determine which attribute to visualize with proportional symbols
     var attribute = attributes[9];
     //derive rank value to submit to fillColoring function
-    var rank = "Rank";
-    var ranking = Number(feature.properties[rank]);
+    var ranking = Number(feature.properties["Rank"]);
     //create marker options
     var options = {
         fillColor: fillColoring(ranking),
@@ -192,36 +191,55 @@ function pointToLayer(feature, latlng, attributes){
     //create circle marker layer
     var layer = L.circleMarker(latlng, options);
     
+    //creat pop up labels and update side panel accordingly
     createPopup(feature.properties, attribute, layer, options.radius);
 
     //return the circle marker to the L.geoJson pointToLayer option
     return layer;
 };
 
-//Add circle markers for point features to the map
+//add markers for both point layers to the map and layer control
 function createPropSymbols(data, map, attributes){
-    //create a Leaflet GeoJSON layer and add it to the map
+    
+    //create main layers, transfers, and run it through the main pointToLayer function. add it to map right away
     var transfers = L.geoJson(data, {
         pointToLayer: function(feature, latlng){
             return pointToLayer(feature, latlng, attributes);
         }
     }).addTo(map);
     
-    var markers = L.markerClusterGroup();
+    //create cluster group for rank layers and specify false on a few default options
+    var markers = L.markerClusterGroup({
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: false
+    });
+    
+    //create ranks layer from geoJson data through the rankMarkers function, do not add it to map
     var ranks = L.geoJson(data, {
         pointToLayer: function(feature, latlng){
             return rankMarkers(feature,latlng);
         }
     });
+    
+    //add the ranks layer to the cluster group
     markers.addLayer(ranks);
+    
+    //add the layers to the layer control button based on leaflet documentation
     var overlayMaps = {
         "Transfer Fees": transfers,
         "2017 Forbes Ranks": markers
     };
+    
+    //when you hover over a marker cluster, it spiderfies it at all zoom levels for easy viewing of ranks
+    markers.on('clustermouseover', function (a) {
+        a.layer.spiderfy();
+    });
+    
+    //add the layer control to the map
     L.control.layers(overlayMaps).addTo(map);
-
 };
 
+//creates all information for second layer set including panel content and which icon to display based on Forbes rank
 function rankMarkers(feature,latlng) {
     var popupContent = "<p class=\"hover-team\"><b>" + feature["properties"]["Team"] + "</b></p>";
     var panelContent = "<h3>2017 Forbes Ranking</h3><br><p>1. Manchester United<br>2. Barcelona<br>3. Real Madrid<br>4. Bayern Munich<br>5. Manchester City<br>6. Arsenal<br>7. Chelsea<br>8. Liverpool<br>9. Juventus<br>10. Tottenham<br>11. Paris Saint-Germain<br>12. Borussia Dortmund<br>13. A.C. Milan<br>14. Atletico Madrid<br>15. West Ham United</p>";
@@ -236,7 +254,7 @@ function rankMarkers(feature,latlng) {
         offset: new L.Point(0,-10)
     });
     
-    
+    //on mouseover, display team name
     layer.on({
     mouseover: function(){
         this.openPopup();
@@ -250,7 +268,6 @@ function rankMarkers(feature,latlng) {
     });
     
     return layer;
-
 };
     
 //function to retrieve the data and place it on the map
@@ -271,7 +288,7 @@ function getData(map){
     });
 };
 
-//Step 10: Resize proportional symbols according to new attribute values
+//resize proportional symbols according to new attribute values
 function updatePropSymbols(map, attribute){
     map.eachLayer(function(layer){
 
@@ -284,11 +301,11 @@ function updatePropSymbols(map, attribute){
         layer.setRadius(radius);
             
         createPopup(props, attribute, layer, radius);
-        
         };
     });
 };
 
+//function to update the team crest image with wikipedia links. team rank used for primary key
 function crestWiki(rank){
     if (rank === 1){
         var url = "https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/220px-Manchester_United_FC_crest.svg.png";
@@ -338,12 +355,13 @@ function crestWiki(rank){
     }
 };
 
+//creates the popup and panel content depending on season displayed or clicked team
 function createPopup(properties, attribute, layer, radius){
     
-    //add team to popup content string
+    //add team name to popup content string
     var popupContent = "<p class=\"hover-team\"><b>" + properties.Team + "</b></p>";
 
-    //add formatted attribute to panel content string
+    //define attributes for panel content string
     var rank = properties.Rank;
     var crestURL = crestWiki(rank);
     var crest = "<img class=\"crest\" src=" + crestURL + " alt='Crest'>";
@@ -352,9 +370,9 @@ function createPopup(properties, attribute, layer, radius){
     var rankText = "<p id=\"rank\"><b>2017 Forbes Value Rank</b>: " + properties.Rank + "</p>";
     var season = attribute.split("_")[1];
     var seasonSpend = "<p id=\"fees\"><b>" + season + " Transfer Fees</b>: &euro;" + properties[attribute] + "  MM</p>";
-
+    
+    //add formatted attribute to panel content string
     var panelContent = crest + teamText + locationText + rankText + seasonSpend;
-
 
     //replace the layer popup
     layer.bindPopup(popupContent, {
@@ -374,6 +392,7 @@ function createPopup(properties, attribute, layer, radius){
     });
 };
 
+//leaflet control creation for legend
 function createLegend(map, attributes){
     var LegendControl = L.Control.extend({
         options: {
@@ -387,7 +406,7 @@ function createLegend(map, attributes){
             //add temporal legend div to container
             $(container).append('<div id="temporal-legend">')
 
-            //Step 1: start attribute legend svg string
+            //start attribute legend svg string
             var svg = '<svg id="attribute-legend" width="350px" height="185px">';
             
             //array of circle names to base loop on
@@ -397,7 +416,7 @@ function createLegend(map, attributes){
                 min: 160
             }
             
-            //Step 2: loop to add each circle and text to svg string
+            //loop to add each circle and text to svg string
             for (var circle in circles){
                 //circle string
                 svg += '<circle class="legend-circle" id="' + circle + 
@@ -443,12 +462,9 @@ function updateLegend(map, attribute){
         
         $('#'+key+'-text').html("&euro;" + Math.round(circleValues[key]*100)/100 + " million");
     };
-    
-    var newHeight = Number(circleValues["max"])-99;
-    //$(".legend-control-container").css({"height":newHeight})
 };
 
-//Calculate the max, mean, and min values for a given attribute
+//calculate the max, mean, and min values for a given attribute
 function getCircleValues(map, attribute){
     //start with min at highest possible and max at lowest possible number
     var min = Infinity,
@@ -482,6 +498,7 @@ function getCircleValues(map, attribute){
     };
 };
 
+//creates zoom to control drop down
 function createSearch(map, geodata){
     var features = geodata["features"];
     var teamList = [];
@@ -489,6 +506,8 @@ function createSearch(map, geodata){
         var team = String(features[i]["properties"]["Team"]);
         teamList.push(team);
     };
+    
+    //alphabatizes team list for intuitive use
     var teamListABC = teamList.sort();
     
     var SearchControl = L.Control.extend({
@@ -505,9 +524,9 @@ function createSearch(map, geodata){
 
     map.addControl(new SearchControl());
     populateSearchDrop(map,geodata,teamListABC);
-
 };
 
+//populates the search drop down and adds functionality
 function populateSearchDrop(map,geodata,list) {
     
     $(".search-control-container").append('<select id="select-drop-down"><option value="zoom">Zoom to...</option>');
@@ -518,14 +537,17 @@ function populateSearchDrop(map,geodata,list) {
         var value = team.replace(/\s+/g, '');
         $("#select-drop-down").append('<option value='+value+'>'+team+'</option>');
     };
-    
     $(".search-control-container").append('</select>');
+    
+    //calls reZoom function upon selection change
     $("#select-drop-down").change(function() {
         reZoom(map,this,geodata);
     });
 };
 
+//zooms to selected team based on search control selection and resets to first option
 function reZoom(map,e,data) {
+    
     var team = e.options[e.selectedIndex].text;
     var features = data["features"];
     function teamCheck(element, index, array) {
@@ -538,6 +560,7 @@ function reZoom(map,e,data) {
     } else if ( index >= 0 && index < features.length) {
         var latitude = features[index]["geometry"]["coordinates"][1];
         var longitude = features[index]["geometry"]["coordinates"][0];
+        //added these slight values because it looked weird being exactly in the center with such a large legend
         map.setView([(latitude - .007), (longitude - .025)], 12);
         $('#select-drop-down').get(0).selectedIndex = 0;
     }
