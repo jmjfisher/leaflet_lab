@@ -1,8 +1,14 @@
 //function to instantiate the Leaflet map
 function createMap(){
     
+    //sets map boundary
+    var myBounds = [[25,-35],[65,30]];
     //create the map
-    var map = L.map('mapid').setView([47.6, -1.7], 5);
+    var map = L.map('mapid', {
+        maxZoom: 16,
+        minZoom: 4,
+        maxBounds: myBounds
+    }).setView([47.6, -1.7], 5);
 
     //add base tilelayer    
     L.tileLayer.provider('Stamen.TonerLite', {attribution:'Map tiles by <a href="https://stamen.com/">Stamen Design</a>, <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a> - Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> - Transfer Data <a href="https://www.transfermarkt.com/">Transfermarkt</a> - <a href="https://www.forbes.com/forbes/welcome/?toURL=https://www.forbes.com/sites/mikeozanian/2017/06/06/the-worlds-most-valuable-soccer-teams-2017/">Forbes Ranking</a>'}).addTo(map);
@@ -555,7 +561,7 @@ function reZoom(map,e,data) {
     };
     var index = Number(features.findIndex(teamCheck));
     if (team === "FULL MAP") {
-        map.setView([47.75, -1.7], 5);
+        map.setView([47.6, -1.7], 5);
         $('#select-drop-down').get(0).selectedIndex = 0;
     } else if ( index >= 0 && index < features.length) {
         var latitude = features[index]["geometry"]["coordinates"][1];
